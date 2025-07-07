@@ -1,0 +1,38 @@
+{
+    "name": "pinterest-api",
+    "version": "1.0.0",
+    "main": "dist/app.js",
+    "type": "module",
+    "scripts": {
+        "start": "node dist/app.js",
+        "dev": "nodemon src/app.ts",
+        "build": "tsc",
+        "db:generate": "prisma generate",
+        "db:push": "prisma db push",
+        "db:migrate": "prisma migrate dev",
+        "db:studio": "prisma studio",
+        "db:seed": "ts-node prisma/seed.ts"
+    },
+    "dependencies": {
+        "@prisma/client": "^6.11.1",
+        "bcryptjs": "^3.0.2",
+        "cors": "^2.8.5",
+        "dotenv": "^17.0.1",
+        "express": "^5.1.0",
+        "joi": "^17.13.3",
+        "jsonwebtoken": "^9.0.2",
+        "multer": "^2.0.1",
+        "prisma": "^6.11.1"
+    },
+    "devDependencies": {
+        "@types/bcryptjs": "^3.0.0",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.3",
+        "@types/jsonwebtoken": "^9.0.10",
+        "@types/multer": "^2.0.0",
+        "@types/node": "^24.0.10",
+        "nodemon": "^3.1.10",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.3"
+    }
+}
