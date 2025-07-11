@@ -21,17 +21,21 @@ export const authenticateToken = async (
 
         if (!token) {
             res.status(statusCodes.UNAUTHORIZED).json({
+                success: false,
                 message: "Token không được cung cấp",
             });
             return;
         }
 
-        // Xác thực token - convert verify to Promise
-        const decoded = jwt.verify(token, JWT.SECRET) as AuthRequest["user"];
+        const decoded = jwt.verify(token, JWT.SECRET) as {
+            id: number;
+            email: string;
+        };
         req.user = decoded;
         next();
     } catch (err) {
         res.status(statusCodes.FORBIDDEN).json({
+            success: false,
             message: "Token không hợp lệ",
         });
     }

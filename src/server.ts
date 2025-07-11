@@ -19,11 +19,6 @@ app.use(handleError);
 
 // Start server
 app.listen(APP.PORT, () => {
-    try {
-        app.listen(APP.PORT, () => {
-            console.log(`✅ Server is running on port ${APP.PORT}`);
-        });
-    } catch (err) {
-        console.error("❌ Failed to start server:", err);
-    }
+    console.log(`✅ Server is running on port ${APP.PORT}`);
+    console.log(`📡 API available at: http://localhost:${APP.PORT}`);
 });

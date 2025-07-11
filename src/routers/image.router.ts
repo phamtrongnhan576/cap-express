@@ -1,14 +1,29 @@
+// routes/saved-image.router.ts
 import { Router } from "express";
-import imageController from "@/controllers/image.controller";
 import { authenticateToken } from "@/common/middlewares/auth.middleware";
+import savedImageController from "@/controllers/saved-image.controller";
 
-const imageRouter = Router();
+const savedImageRouter = Router();
 
-imageRouter.get("/", imageController.getAll);
-imageRouter.get("/search", imageController.search);
-imageRouter.get("/:id", imageController.getById);
-imageRouter.post("/", authenticateToken, imageController.create);
-imageRouter.delete("/:id", authenticateToken, imageController.delete);
-imageRouter.get("/user/images", authenticateToken, imageController.getByUser);
+savedImageRouter.post(
+    "/:imageId",
+    authenticateToken,
+    savedImageController.save
+);
+savedImageRouter.delete(
+    "/:imageId",
+    authenticateToken,
+    savedImageController.unSave
+);
+savedImageRouter.get(
+    "/:imageId/check",
+    authenticateToken,
+    savedImageController.checkSaved
+);
+savedImageRouter.get(
+    "/user/saved",
+    authenticateToken,
+    savedImageController.UserSaved
+);
 
-export default imageRouter;
+export default savedImageRouter;
