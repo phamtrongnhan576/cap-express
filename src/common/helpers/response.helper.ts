@@ -1,13 +1,11 @@
-// utils/response.ts
-
 import {
     ErrorResponse,
     SuccessResponse,
     ErrorOptions,
     SuccessOptions,
-} from "@/common/types/response.type";
+} from "@/common/types/response.type.js";
 
-const DOC_URL = "http://localhost:3000"; // hoặc để trong .env nếu muốn
+const DOC_URL = "http://localhost:3000";
 
 export const responseSuccess = <T = any>(
     options: SuccessOptions<T> = {}

@@ -1,17 +1,20 @@
 import { Router } from "express";
 import { authenticateToken } from "@/common/middlewares/auth.middleware";
-import {
-    saveImage,
-    unsaveImage,
-    checkSavedImage,
-    getUserSavedImages,
-} from "../controllers/saved-image.controller";
+import savedImageController from "@/controllers/saved-image.controller";
 
-const router = Router();
+const savedImageRouter = Router();
 
-router.post("/images/:imageId/save", authenticateToken, saveImage);
-router.delete("/images/:imageId/save", authenticateToken, unsaveImage);
-router.get("/images/:imageId/check-saved", authenticateToken, checkSavedImage);
-router.get("/user/saved-images", authenticateToken, getUserSavedImages);
+savedImageRouter.post("/:id", authenticateToken, savedImageController.save);
+savedImageRouter.delete("/:id", authenticateToken, savedImageController.unSave);
+savedImageRouter.get(
+    "/:id",
+    authenticateToken,
+    savedImageController.checkSaved
+);
+savedImageRouter.get(
+    "/user",
+    authenticateToken,
+    savedImageController.UserSaved
+);
 
-export default router;
+export default savedImageRouter;

@@ -1,103 +1,80 @@
 import { Response } from "express";
-import { SavedImageService } from "../services/saved-image.service";
+import SavedImageService from "../services/saved-image.service";
 import { AuthRequest } from "@/common/middlewares/auth.middleware";
+import {
+    responseSuccess,
+    responseError,
+} from "@/common/helpers/response.helper";
 import { statusCodes } from "@/common/helpers/statusCode.helper";
 
-const savedImageService = new SavedImageService();
-
-export const saveImage = async (
-    req: AuthRequest,
-    res: Response
-): Promise<void> => {
-    try {
+const savedImageController = {
+    save: async (req: AuthRequest, res: Response) => {
         const { imageId } = req.params;
         const userId = req.user!.id;
 
-        const savedImage = await savedImageService.saveImage(
-            userId,
-            parseInt(imageId)
-        );
+        const result = await SavedImageService.save(userId, parseInt(imageId));
 
-        res.status(statusCodes.CREATED).json({
+        const response = responseSuccess({
+            data: result,
             message: "Lưu ảnh thành công",
-            data: savedImage,
+            statusCode: statusCodes.CREATED,
         });
-    } catch (error: any) {
-        res.status(statusCodes.BAD_REQUEST).json({
-            message: error.message || "Lỗi server",
-        });
-    }
-};
 
-export const unsaveImage = async (
-    req: AuthRequest,
-    res: Response
-): Promise<void> => {
-    try {
+        res.status(response.statusCode).json(response);
+    },
+
+    unSave: async (req: AuthRequest, res: Response) => {
         const { imageId } = req.params;
         const userId = req.user!.id;
 
-        const isUnsaved = await savedImageService.unsaveImage(
+        const isUnsaved = await SavedImageService.unSave(
             userId,
             parseInt(imageId)
         );
 
         if (!isUnsaved) {
-            res.status(statusCodes.NOT_FOUND).json({
+            const response = responseError({
                 message: "Ảnh chưa được lưu hoặc không tồn tại",
+                statusCode: statusCodes.NOT_FOUND,
             });
-            return;
+            res.status(response.statusCode).json(response);
         }
 
-        res.status(statusCodes.OK).json({
+        const response = responseSuccess({
             message: "Bỏ lưu ảnh thành công",
         });
-    } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            message: "Lỗi server",
-        });
-    }
-};
-export const checkSavedImage = async (
-    req: AuthRequest,
-    res: Response
-): Promise<void> => {
-    try {
+        res.status(response.statusCode).json(response);
+    },
+
+    checkSaved: async (req: AuthRequest, res: Response) => {
         const { imageId } = req.params;
         const userId = req.user!.id;
 
-        const isSaved = await savedImageService.checkSavedImage(
+        const isSaved = await SavedImageService.checkSaved(
             userId,
             parseInt(imageId)
         );
 
-        res.status(statusCodes.OK).json({
+        const response = responseSuccess({
+            data: { is_saved: isSaved },
             message: "Kiểm tra trạng thái lưu ảnh thành công",
-            is_saved: isSaved,
         });
-    } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            message: "Lỗi server",
-        });
-    }
-};
 
-export const getUserSavedImages = async (
-    req: AuthRequest,
-    res: Response
-): Promise<void> => {
-    try {
+        res.status(response.statusCode).json(response);
+    },
+
+    UserSaved: async (req: AuthRequest, res: Response) => {
         const userId = req.user!.id;
 
-        const savedImages = await savedImageService.getUserSavedImages(userId);
+        const savedImages = await SavedImageService.UserSaved(userId);
 
-        res.status(statusCodes.OK).json({
-            message: "Lấy danh sách ảnh đã lưu thành công",
+        const response = responseSuccess({
             data: savedImages,
+            message: "Lấy danh sách ảnh đã lưu thành công",
         });
-    } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            message: "Lỗi server",
-        });
-    }
+
+        res.status(response.statusCode).json(response);
+    },
 };
+
+export default savedImageController;

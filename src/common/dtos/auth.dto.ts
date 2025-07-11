@@ -10,12 +10,3 @@ export interface LoginDTO {
     password: string;
 }
 
-export interface LoginResponseDTO {
-    message: string;
-    token: string;
-    user: {
-        id: number;
-        email: string;
-        full_name: string;
-    };
-}

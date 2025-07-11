@@ -1,7 +1,7 @@
 import prisma from "@/common/prisma/init.prisma";
 
-export class SavedImageService {
-    async saveImage(userId: number, imageId: number) {
+const SavedImageService = {
+    async save(userId: number, imageId: number) {
         const existingSave = await prisma.saved_images.findFirst({
             where: {
                 user_id: userId,
@@ -31,9 +31,9 @@ export class SavedImageService {
                 image_id: imageId,
             },
         });
-    }
+    },
 
-    async unsaveImage(userId: number, imageId: number): Promise<boolean> {
+    async unSave(userId: number, imageId: number): Promise<boolean> {
         const savedImage = await prisma.saved_images.findFirst({
             where: {
                 user_id: userId,
@@ -56,9 +56,8 @@ export class SavedImageService {
         });
 
         return true;
-    }
-
-    async checkSavedImage(userId: number, imageId: number): Promise<boolean> {
+    },
+    async checkSaved(userId: number, imageId: number): Promise<boolean> {
         const savedImage = await prisma.saved_images.findFirst({
             where: {
                 user_id: userId,
@@ -68,9 +67,8 @@ export class SavedImageService {
         });
 
         return !!savedImage;
-    }
-
-    async getUserSavedImages(userId: number) {
+    },
+    async UserSaved(userId: number) {
         return await prisma.saved_images.findMany({
             where: {
                 user_id: userId,
@@ -91,5 +89,7 @@ export class SavedImageService {
             },
             orderBy: { created_at: "desc" },
         });
-    }
-}
+    },
+};
+
+export default SavedImageService;

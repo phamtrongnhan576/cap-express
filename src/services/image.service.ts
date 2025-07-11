@@ -1,7 +1,7 @@
 import { CreateImageDTO } from "@/common/dtos/image.dto";
 import prisma from "@/common/prisma/init.prisma";
 
-export class ImageService {
+export const ImageService = {
     async getAllImages(page: number = 1, limit: number = 10) {
         const skip = (page - 1) * limit;
 
@@ -45,7 +45,7 @@ export class ImageService {
                 totalPages: Math.ceil(total / limit),
             },
         };
-    }
+    },
 
     async searchImages(title: string, page: number = 1, limit: number = 10) {
         const skip = (page - 1) * limit;
@@ -100,7 +100,7 @@ export class ImageService {
                 totalPages: Math.ceil(total / limit),
             },
         };
-    }
+    },
 
     async getImageById(id: number) {
         return await prisma.images.findFirst({
@@ -128,7 +128,7 @@ export class ImageService {
                 },
             },
         });
-    }
+    },
 
     async createImage(userId: number, imageData: CreateImageDTO) {
         return await prisma.images.create({
@@ -139,7 +139,7 @@ export class ImageService {
                 user_id: userId,
             },
         });
-    }
+    },
 
     async deleteImage(id: number, userId: number): Promise<boolean> {
         const image = await prisma.images.findFirst({
@@ -164,7 +164,7 @@ export class ImageService {
         });
 
         return true;
-    }
+    },
 
     async getUserImages(userId: number) {
         return await prisma.images.findMany({
@@ -186,5 +186,6 @@ export class ImageService {
             },
             orderBy: { created_at: "desc" },
         });
-    }
-}
+    },
+};
+export default ImageService;
