@@ -1,14 +1,11 @@
 // services/comment.service.ts
 import { PrismaClient } from "@prisma/client";
-import {
-    CreateCommentDTO,
-    CommentResponseDTO,
-} from "@/common/dtos/comment.dto";
+import { CreateCommentDTO } from "@/common/dtos/comment.dto";
 
 const prisma = new PrismaClient();
 
 const commentService = {
-    getByImageId: async (imageId: number): Promise<CommentResponseDTO[]> => {
+    getByImageId: async (imageId: number) => {
         const comments = await prisma.comments.findMany({
             where: { image_id: imageId, is_deleted: false },
             include: {
@@ -26,10 +23,7 @@ const commentService = {
         return comments;
     },
 
-    create: async (
-        commentData: CreateCommentDTO,
-        userId: number
-    ): Promise<CommentResponseDTO> => {
+    create: async (commentData: CreateCommentDTO, userId: number) => {
         const { image_id, content } = commentData;
 
         const newComment = await prisma.comments.create({
@@ -51,11 +45,7 @@ const commentService = {
 
         return newComment;
     },
-    update: async (
-        id: number,
-        userId: number,
-        content: string
-    ): Promise<CommentResponseDTO> => {
+    update: async (id: number, userId: number, content: string) => {
         const comment = await prisma.comments.findFirst({
             where: { id, user_id: userId, is_deleted: false },
         });
@@ -82,7 +72,7 @@ const commentService = {
 
         return updatedComment;
     },
-    delete: async (id: number, userId: number): Promise<void> => {
+    delete: async (id: number, userId: number) => {
         const comment = await prisma.comments.findFirst({
             where: { id, user_id: userId, is_deleted: false },
         });

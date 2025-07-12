@@ -33,11 +33,7 @@ export const authService = {
             },
         });
 
-        return {
-            id: user.id,
-            email: user.email,
-            full_name: user.full_name,
-        };
+        return user;
     },
 
     async login(loginData: LoginDTO) {

@@ -8,14 +8,6 @@ const userService = {
     getProfile: async (userId: number) => {
         const user = await prisma.users.findFirst({
             where: { id: userId, is_deleted: false },
-            select: {
-                id: true,
-                email: true,
-                full_name: true,
-                age: true,
-                avatar_url: true,
-                created_at: true,
-            },
         });
 
         if (!user) {
@@ -34,7 +26,6 @@ const userService = {
             avatar_url,
         };
 
-        // Nếu có password mới, mã hóa nó
         if (password) {
             dataToUpdate.password = await bcrypt.hash(password, 10);
         }
@@ -42,14 +33,6 @@ const userService = {
         const updatedUser = await prisma.users.update({
             where: { id: userId },
             data: dataToUpdate,
-            select: {
-                id: true,
-                email: true,
-                full_name: true,
-                age: true,
-                avatar_url: true,
-                created_at: true,
-            },
         });
 
         return updatedUser;
@@ -95,7 +78,6 @@ const userService = {
         return createdImages;
     },
 
-    // Thống kê user
     getUserStats: async (userId: number) => {
         const [createdCount, savedCount, commentsCount] = await Promise.all([
             prisma.images.count({

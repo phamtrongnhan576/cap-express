@@ -12,7 +12,7 @@ import {
 const userController = {
     getProfile: async (req: AuthRequest, res: Response) => {
         try {
-            const userId = req.user!.id; // Sửa từ userId thành id
+            const userId = req.user!.id;
             const result = await userService.getProfile(userId);
 
             const response = responseSuccess({
@@ -33,7 +33,7 @@ const userController = {
 
     updateProfile: async (req: AuthRequest, res: Response) => {
         try {
-            const userId = req.user!.id; // Sửa từ userId thành id
+            const userId = req.user!.id;
             const updateData: UpdateUserDTO = req.body;
             const result = await userService.updateProfile(userId, updateData);
 
@@ -55,7 +55,7 @@ const userController = {
 
     getSavedImages: async (req: AuthRequest, res: Response) => {
         try {
-            const userId = req.user!.id; // Sửa từ userId thành id
+            const userId = req.user!.id;
             const result = await userService.getSavedImages(userId);
 
             const response = responseSuccess({
@@ -76,7 +76,7 @@ const userController = {
 
     getCreatedImages: async (req: AuthRequest, res: Response) => {
         try {
-            const userId = req.user!.id; // Sửa từ userId thành id
+            const userId = req.user!.id;
             const result = await userService.getCreatedImages(userId);
 
             const response = responseSuccess({
