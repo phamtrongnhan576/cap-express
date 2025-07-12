@@ -1,10 +1,11 @@
 import ImageService from "@/services/image.service";
 import { responseSuccess } from "@/common/helpers/response.helper";
 import { BadrequestException } from "@/common/helpers/exception.helper";
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "@/common/middlewares/auth.middleware";
 
 const imageController = {
-    getAll: async (req: Request, res: Response, next: NextFunction) => {
+    getAll: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
@@ -20,7 +21,7 @@ const imageController = {
         }
     },
 
-    search: async (req: Request, res: Response, next: NextFunction) => {
+    search: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const title = req.query.title as string;
             const page = parseInt(req.query.page as string) || 1;
@@ -41,7 +42,7 @@ const imageController = {
         }
     },
 
-    getById: async (req: Request, res: Response, next: NextFunction) => {
+    getById: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const imageId = parseInt(req.params.id);
             if (isNaN(imageId)) {
@@ -63,12 +64,8 @@ const imageController = {
         }
     },
 
-    create: async (req: Request, res: Response, next: NextFunction) => {
+    create: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            if (req.fileValidationError) {
-                throw new BadrequestException("Chỉ chấp nhận file hình ảnh!");
-            }
-
             const userId = req.user?.id;
             if (!userId) {
                 throw new BadrequestException("Yêu cầu xác thực người dùng");
@@ -92,12 +89,8 @@ const imageController = {
         }
     },
 
-    edit: async (req: Request, res: Response, next: NextFunction) => {
+    edit: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            if (req.fileValidationError) {
-                throw new BadrequestException("Chỉ chấp nhận file hình ảnh!");
-            }
-
             const imageId = parseInt(req.params.id);
             if (isNaN(imageId)) {
                 throw new BadrequestException("ID ảnh không hợp lệ");
@@ -129,7 +122,7 @@ const imageController = {
         }
     },
 
-    delete: async (req: Request, res: Response, next: NextFunction) => {
+    delete: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const imageId = parseInt(req.params.id);
             if (isNaN(imageId)) {
@@ -152,7 +145,7 @@ const imageController = {
         }
     },
 
-    getUser: async (req: Request, res: Response, next: NextFunction) => {
+    getUser: async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const userId = parseInt(req.params.userId);
             if (isNaN(userId)) {
