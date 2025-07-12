@@ -1,29 +1,32 @@
-// routes/saved-image.router.ts
 import { Router } from "express";
 import { authenticateToken } from "@/common/middlewares/auth.middleware";
-import savedImageController from "@/controllers/saved-image.controller";
+import { upload } from "@/common/config/cloudinary.config";
+import imageController from "@/controllers/image.controller";
 
-const savedImageRouter = Router();
+const imageRouter = Router();
 
-savedImageRouter.post(
-    "/:imageId",
+imageRouter.get("/", imageController.getAll);
+
+imageRouter.get("/search", imageController.search);
+
+imageRouter.get("/:id", imageController.getById);
+
+imageRouter.post(
+    "/",
     authenticateToken,
-    savedImageController.save
-);
-savedImageRouter.delete(
-    "/:imageId",
-    authenticateToken,
-    savedImageController.unSave
-);
-savedImageRouter.get(
-    "/:imageId/check",
-    authenticateToken,
-    savedImageController.checkSaved
-);
-savedImageRouter.get(
-    "/user/saved",
-    authenticateToken,
-    savedImageController.UserSaved
+    upload.single("file"),
+    imageController.create
 );
 
-export default savedImageRouter;
+imageRouter.put(
+    "/:id",
+    authenticateToken,
+    upload.single("file"),
+    imageController.edit
+);
+
+imageRouter.delete("/:id", authenticateToken, imageController.delete);
+
+imageRouter.get("/user/:userId", authenticateToken, imageController.getUser);
+
+export default imageRouter;

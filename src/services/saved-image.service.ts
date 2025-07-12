@@ -43,7 +43,7 @@ const SavedImageService = {
         });
 
         if (!savedImage) {
-            return false;
+            return false;   
         }
 
         await prisma.saved_images.update({

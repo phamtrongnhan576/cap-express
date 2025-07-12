@@ -1,121 +1,174 @@
-// controllers/saved-image.controller.ts
-import { Response } from "express";
-import SavedImageService from "../services/saved-image.service";
-import { AuthRequest } from "@/common/middlewares/auth.middleware";
-import {
-    responseSuccess,
-    responseError,
-} from "@/common/helpers/response.helper";
-import { statusCodes } from "@/common/helpers/statusCode.helper";
+import ImageService from "@/services/image.service";
+import { responseSuccess } from "@/common/helpers/response.helper";
+import { BadrequestException } from "@/common/helpers/exception.helper";
+import { Request, Response, NextFunction } from "express";
 
-const savedImageController = {
-    save: async (req: AuthRequest, res: Response) => {
+const imageController = {
+    getAll: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { imageId } = req.params;
-            const userId = req.user!.id;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
 
-            const result = await SavedImageService.save(
-                userId,
-                parseInt(imageId)
-            );
-
+            const result = await ImageService.getAll(page, limit);
             const response = responseSuccess({
                 data: result,
-                message: "Lưu ảnh thành công",
-                statusCode: statusCodes.CREATED,
+                message: "Lấy danh sách ảnh thành công",
             });
-
             res.status(response.statusCode).json(response);
-        } catch (error: any) {
-            const response = responseError({
-                message: error.message,
-                statusCode: statusCodes.BAD_REQUEST,
-            });
-
-            res.status(response.statusCode).json(response);
+        } catch (error) {
+            next(error);
         }
     },
 
-    unSave: async (req: AuthRequest, res: Response) => {
+    search: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { imageId } = req.params;
-            const userId = req.user!.id;
+            const title = req.query.title as string;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
 
-            const isUnsaved = await SavedImageService.unSave(
-                userId,
-                parseInt(imageId)
-            );
+            if (!title) {
+                throw new BadrequestException("Yêu cầu tiêu đề để tìm kiếm");
+            }
 
-            if (!isUnsaved) {
-                const response = responseError({
-                    message: "Ảnh chưa được lưu hoặc không tồn tại",
-                    statusCode: statusCodes.NOT_FOUND,
-                });
-                res.status(response.statusCode).json(response);
-                return;
+            const result = await ImageService.search(title, page, limit);
+            const response = responseSuccess({
+                data: result,
+                message: "Tìm kiếm ảnh thành công",
+            });
+            res.status(response.statusCode).json(response);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    getById: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const imageId = parseInt(req.params.id);
+            if (isNaN(imageId)) {
+                throw new BadrequestException("ID ảnh không hợp lệ");
+            }
+
+            const result = await ImageService.getById(imageId);
+            if (!result) {
+                throw new BadrequestException("Không tìm thấy ảnh");
             }
 
             const response = responseSuccess({
-                message: "Bỏ lưu ảnh thành công",
+                data: result,
+                message: "Lấy thông tin ảnh thành công",
             });
             res.status(response.statusCode).json(response);
-        } catch (error: any) {
-            const response = responseError({
-                message: error.message,
-                statusCode: statusCodes.INTERNAL_SERVER_ERROR,
-            });
-
-            res.status(response.statusCode).json(response);
+        } catch (error) {
+            next(error);
         }
     },
 
-    checkSaved: async (req: AuthRequest, res: Response) => {
+    create: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { imageId } = req.params;
-            const userId = req.user!.id;
+            if (req.fileValidationError) {
+                throw new BadrequestException("Chỉ chấp nhận file hình ảnh!");
+            }
 
-            const isSaved = await SavedImageService.checkSaved(
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new BadrequestException("Yêu cầu xác thực người dùng");
+            }
+
+            const imageData = {
+                title: req.body.title,
+                description: req.body.description,
+                url: req.body.url,
+            };
+            const file = req.file;
+
+            const result = await ImageService.create(userId, imageData, file);
+            const response = responseSuccess({
+                data: result,
+                message: "Tạo ảnh thành công",
+            });
+            res.status(response.statusCode).json(response);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    edit: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if (req.fileValidationError) {
+                throw new BadrequestException("Chỉ chấp nhận file hình ảnh!");
+            }
+
+            const imageId = parseInt(req.params.id);
+            if (isNaN(imageId)) {
+                throw new BadrequestException("ID ảnh không hợp lệ");
+            }
+
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new BadrequestException("Yêu cầu xác thực người dùng");
+            }
+
+            const imageData = {
+                description: req.body.description,
+            };
+            const file = req.file;
+
+            const result = await ImageService.edit(
+                imageId,
                 userId,
-                parseInt(imageId)
+                imageData,
+                file
             );
-
             const response = responseSuccess({
-                data: { is_saved: isSaved },
-                message: "Kiểm tra trạng thái lưu ảnh thành công",
+                data: result,
+                message: "Cập nhật ảnh thành công",
             });
-
             res.status(response.statusCode).json(response);
-        } catch (error: any) {
-            const response = responseError({
-                message: error.message,
-                statusCode: statusCodes.INTERNAL_SERVER_ERROR,
-            });
-
-            res.status(response.statusCode).json(response);
+        } catch (error) {
+            next(error);
         }
     },
 
-    UserSaved: async (req: AuthRequest, res: Response) => {
+    delete: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const userId = req.user!.id;
+            const imageId = parseInt(req.params.id);
+            if (isNaN(imageId)) {
+                throw new BadrequestException("ID ảnh không hợp lệ");
+            }
 
-            const savedImages = await SavedImageService.UserSaved(userId);
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new BadrequestException("Yêu cầu xác thực người dùng");
+            }
 
+            const result = await ImageService.delete(imageId, userId);
             const response = responseSuccess({
-                data: savedImages,
-                message: "Lấy danh sách ảnh đã lưu thành công",
+                data: result,
+                message: `Xóa ảnh #${imageId} thành công`,
             });
-
             res.status(response.statusCode).json(response);
-        } catch (error: any) {
-            const response = responseError({
-                message: error.message,
-                statusCode: statusCodes.INTERNAL_SERVER_ERROR,
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    getUser: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = parseInt(req.params.userId);
+            if (isNaN(userId)) {
+                throw new BadrequestException("ID người dùng không hợp lệ");
+            }
+
+            const result = await ImageService.getUser(userId);
+            const response = responseSuccess({
+                data: result,
+                message: "Lấy danh sách ảnh của người dùng thành công",
             });
-
             res.status(response.statusCode).json(response);
+        } catch (error) {
+            next(error);
         }
     },
 };
 
-export default savedImageController;
+export default imageController;

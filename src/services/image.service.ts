@@ -1,8 +1,9 @@
 import { CreateImageDTO } from "@/common/dtos/image.dto";
+import { BadrequestException } from "@/common/helpers/exception.helper";
 import prisma from "@/common/prisma/init.prisma";
-import { v2 as cloudinary } from 'cloudinary';
+
 export const ImageService = {
-    async getAllImages(page: number = 1, limit: number = 10) {
+    async getAll(page: number = 1, limit: number = 10) {
         const skip = (page - 1) * limit;
 
         const [images, total] = await Promise.all([
@@ -47,7 +48,7 @@ export const ImageService = {
         };
     },
 
-    async searchImages(title: string, page: number = 1, limit: number = 10) {
+    async search(title: string, page: number = 1, limit: number = 10) {
         const skip = (page - 1) * limit;
 
         const [images, total] = await Promise.all([
@@ -102,7 +103,7 @@ export const ImageService = {
         };
     },
 
-    async getImageById(id: number) {
+    async getById(id: number) {
         return await prisma.images.findFirst({
             where: {
                 id,
@@ -130,57 +131,79 @@ export const ImageService = {
         });
     },
 
-    // Sửa lại hàm createImage để hỗ trợ cả file upload và URL
-    async createImage(
+    async create(
         userId: number,
         imageData: CreateImageDTO,
         file?: Express.Multer.File
     ) {
         let imageUrl = imageData.url;
-        let cloudinaryPublicId = null;
 
-        // Nếu có file thì upload lên Cloudinary
         if (file) {
-            try {
-                const result = await cloudinary.uploader.upload(file.path, {
-                    folder: "pinterest-app",
-                    resource_type: "image",
-                    transformation: [
-                        {
-                            width: 1200,
-                            height: 800,
-                            crop: "limit",
-                            quality: "auto",
-                        },
-                    ],
-                });
-
-                imageUrl = result.secure_url;
-                cloudinaryPublicId = result.public_id;
-            } catch (error) {
-                throw new Error("Upload ảnh lên Cloudinary thất bại");
-            }
+            imageUrl = file.path; // Lấy URL từ multer-storage-cloudinary
         }
 
-        // Kiểm tra phải có URL hoặc file
         if (!imageUrl && !file) {
-            throw new Error("Phải có URL ảnh hoặc file upload");
+            throw new BadrequestException("Phải có URL ảnh hoặc file upload");
         }
 
-        // Lưu vào database
         return await prisma.images.create({
             data: {
                 title: imageData.title,
                 url: imageUrl,
                 description: imageData.description || null,
                 user_id: userId,
-                cloudinary_public_id: cloudinaryPublicId,
             },
         });
     },
 
-    // Sửa lại hàm deleteImage để xóa cả trên Cloudinary
-    async deleteImage(id: number, userId: number): Promise<boolean> {
+    async edit(
+        imageId: number,
+        userId: number,
+        imageData: { description?: string },
+        file?: Express.Multer.File
+    ) {
+        const image = await prisma.images.findFirst({
+            where: {
+                id: imageId,
+                user_id: userId,
+                is_deleted: false,
+            },
+        });
+
+        if (!image) {
+            throw new BadrequestException(
+                "Không tìm thấy ảnh hoặc bạn không có quyền chỉnh sửa"
+            );
+        }
+
+        const dataToUpdate: any = {
+            updated_at: new Date(),
+        };
+
+        if (imageData.description !== undefined) {
+            dataToUpdate.description = imageData.description;
+        }
+
+        if (file) {
+            dataToUpdate.url = file.path; // Cập nhật URL mới
+        }
+
+        return await prisma.images.update({
+            where: { id: imageId },
+            data: dataToUpdate,
+            select: {
+                id: true,
+                title: true,
+                url: true,
+                description: true,
+                user_id: true,
+                created_at: true,
+                updated_at: true,
+            },
+        });
+    },
+
+    async delete(id: number, userId: number): Promise<boolean> {
         const image = await prisma.images.findFirst({
             where: {
                 id,
@@ -190,19 +213,9 @@ export const ImageService = {
         });
 
         if (!image) {
-            return false;
+            throw new BadrequestException("Không tìm thấy ảnh");
         }
 
-        // Xóa trên Cloudinary nếu có public_id
-        if (image.cloudinary_public_id) {
-            try {
-                await cloudinary.uploader.destroy(image.cloudinary_public_id);
-            } catch (error) {
-                console.error("Xóa ảnh trên Cloudinary thất bại:", error);
-            }
-        }
-
-        // Soft delete trong database
         await prisma.images.update({
             where: { id },
             data: {
@@ -214,8 +227,7 @@ export const ImageService = {
 
         return true;
     },
-
-    async getUserImages(userId: number) {
+    async getUser(userId: number) {
         return await prisma.images.findMany({
             where: {
                 user_id: userId,

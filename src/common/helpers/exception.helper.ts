@@ -1,23 +1,24 @@
-import { statusCodes } from "@/common/helpers/statusCode.helper.js";
+// common/helpers/exception.helper.ts
+import { statusCodes } from "@/common/helpers/statusCode.helper";
 
 export class HttpException extends Error {
     code: number;
 
     constructor(message: string, code: number) {
         super(message);
+        this.name = new.target.name;
         this.code = code;
-        Object.setPrototypeOf(this, new.target.prototype);
     }
 }
 
 export class BadrequestException extends HttpException {
-    constructor(message = "Bad Request") {
+    constructor(message: string = "Bad Request") {
         super(message, statusCodes.BAD_REQUEST);
     }
 }
 
 export class UnauthorizedException extends HttpException {
-    constructor(message = "Unauthorized") {
+    constructor(message: string = "Unauthorized") {
         super(message, statusCodes.UNAUTHORIZED);
     }
 }
