@@ -139,7 +139,7 @@ export const ImageService = {
         let imageUrl = imageData.url;
 
         if (file) {
-            imageUrl = file.path; // Lấy URL từ multer-storage-cloudinary
+            imageUrl = file.path;
         }
 
         if (!imageUrl && !file) {
